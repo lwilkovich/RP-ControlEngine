@@ -7,6 +7,7 @@
     },
     "LoggingController": {
         "Enabled": true,
+        "Thread-Count": 1,
         "Cpu-Usage": 5,
         "Throughput-Interval": 60.0,
         "Auto-Restart": true,
@@ -34,5 +35,11 @@
                 "Error": false
             }
         }
+    },
+    "NetworkConnectionController": {
+        "Enabled": true,
+        "Thread-Count": 1,
+        "Cpu-Usage": 5,
+        "Auto-Restart": true
     }
 }

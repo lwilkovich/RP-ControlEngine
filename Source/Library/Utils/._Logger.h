@@ -2,8 +2,8 @@
 #define ___LOGGER_H__
 #include <iostream>
 #include <iomanip> 
-#include "./_String.h"
-#include "./_DateTime.h"
+#include "_String.h"
+#include "_DateTime.h"
 
 namespace _Logger {
     enum Level {
