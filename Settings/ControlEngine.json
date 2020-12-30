@@ -1,0 +1,38 @@
+{
+    "ControlEngine": {
+        "Enabled": true
+    },
+    "ThreadOrchestrator": {
+        "Enabled": true
+    },
+    "LoggingController": {
+        "Enabled": true,
+        "Cpu-Usage": 5,
+        "Throughput-Interval": 60.0,
+        "Auto-Restart": true,
+        "File-Location": "/var/log/ControlEngine.log",
+        "Toggle-Logging-Flags": {
+            "Screen": {
+                "Info": true,
+                "Debug": true,
+                "Warning": true,
+                "System": true,
+                "Error": true
+            },
+            "Network": {
+                "Info": false,
+                "Debug": false,
+                "Warning": false,
+                "System": false,
+                "Error": false
+            },
+            "File": {
+                "Info": false,
+                "Debug": false,
+                "Warning": false,
+                "System": false,
+                "Error": false
+            }
+        }
+    }
+}
