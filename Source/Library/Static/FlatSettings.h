@@ -9,7 +9,7 @@
 // class FlatSettings {
 //     private:
 //     public:
-//         ControlEngineBlock controlEngineBlock; 
+//         ControlEngineBlock controlEngineBlock;
 
 //         FlatSettings(){}
 //         static FlatSettings& getFlatSettings() {

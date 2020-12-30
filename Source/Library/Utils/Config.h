@@ -1,29 +1,33 @@
 #ifndef __CONFIG_h__
 #define __CONFIG_h__
 
-#include <string.h>
+#include "../../Third-Party/json.hpp"
+#include "_String.h"
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <regex>
+#include <string.h>
 #include <unordered_map>
 #include <vector>
-#include "../../Third-Party/json.hpp"
 typedef nlohmann::json json;
 
 class Config {
-   public:
+  public:
     Config() {}
     json settings;
-    int load(const char *configLocation) {
+    int load(const char *configLocation)
+    {
         try {
             std::ifstream ifs(configLocation);
             settings = json::parse(ifs);
         }
-        catch (...) {
+        catch (const std::exception &e) {
+            std::cerr << e.what() << std::endl;
             return 1;
         }
         return 0;
-    } 
+    }
 };
 #endif
