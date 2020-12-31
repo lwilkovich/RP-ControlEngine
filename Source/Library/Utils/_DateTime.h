@@ -6,8 +6,7 @@
 #include <string>
 
 namespace _DateTime {
-    inline std::string grabDate()
-    {
+    inline std::string grabDate() {
         std::time_t rawtime;
         std::tm *timeinfo;
         char buffer[11];
@@ -20,8 +19,7 @@ namespace _DateTime {
         return date;
     }
 
-    inline std::string grabTime()
-    {
+    inline std::string grabTime() {
         std::time_t rawtime;
         std::tm *timeinfo;
         char buffer[11];

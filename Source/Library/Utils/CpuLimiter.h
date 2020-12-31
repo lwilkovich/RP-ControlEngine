@@ -24,12 +24,10 @@ namespace Engine {
         std::chrono::time_point<std::chrono::high_resolution_clock> clockStop;
 
       public:
-        CpuLimiter(int cpu)
-        {
+        CpuLimiter(int cpu) {
             if ((cpu < 0) or (cpu > 100)) {
                 cpuPercentage = _DEFAULT_CPU_USAGE;
-            }
-            else {
+            } else {
                 cpuPercentage = cpu;
             }
             clockStart = std::chrono::high_resolution_clock::now();
@@ -37,8 +35,7 @@ namespace Engine {
         }
         const std::string getTag() { return TAG; }
         const std::string getDesc() { return "Temp"; }
-        void CalculateAndSleep()
-        {
+        void CalculateAndSleep() {
             if (cpuPercentage == 100) {
                 return;
             }

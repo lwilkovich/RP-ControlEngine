@@ -27,8 +27,7 @@ class LogThroughput {
     std::chrono::time_point<std::chrono::system_clock> finishTime;
 
   public:
-    LogThroughput()
-    {
+    LogThroughput() {
         startTime = std::chrono::system_clock::now();
         systemCount = 0;
         infoCount = 0;
@@ -43,8 +42,7 @@ class LogThroughput {
         errorMemSize = 0;
     }
 
-    LogThroughput(const LogThroughput &other)
-    {
+    LogThroughput(const LogThroughput &other) {
         systemCount = other.systemCount;
         infoCount = other.infoCount;
         debugCount = other.debugCount;
@@ -61,8 +59,7 @@ class LogThroughput {
         finishTime = other.finishTime;
     }
 
-    LogThroughput &operator=(const LogThroughput &other)
-    {
+    LogThroughput &operator=(const LogThroughput &other) {
         if (this != &other) {
             systemCount = other.systemCount;
             infoCount = other.infoCount;
@@ -98,43 +95,37 @@ class LogThroughput {
 
     int getTotalCount() { return getSystemCount() + getInfoCount() + getDebugCount() + getWarningCount() + getErrorCount(); }
 
-    void pushSysLog(std::string logRecord)
-    {
+    void pushSysLog(std::string logRecord) {
         std::lock_guard<std::mutex> guard(systemPushLock);
         systemCount += 1;
         systemMemSize += logRecord.size();
     }
 
-    void pushInfoLog(std::string logRecord)
-    {
+    void pushInfoLog(std::string logRecord) {
         std::lock_guard<std::mutex> guard(infoPushLock);
         infoCount += 1;
         infoMemSize += logRecord.size();
     }
 
-    void pushDebugLog(std::string logRecord)
-    {
+    void pushDebugLog(std::string logRecord) {
         std::lock_guard<std::mutex> guard(debugPushLock);
         debugCount += 1;
         debugMemSize += logRecord.size();
     }
 
-    void pushWarningLog(std::string logRecord)
-    {
+    void pushWarningLog(std::string logRecord) {
         std::lock_guard<std::mutex> guard(warningPushLock);
         warningCount += 1;
         warningMemSize += logRecord.size();
     }
 
-    void pushErrorLog(std::string logRecord)
-    {
+    void pushErrorLog(std::string logRecord) {
         std::lock_guard<std::mutex> guard(errorPushLock);
         errorCount += 1;
         errorMemSize += logRecord.size();
     }
 
-    int size()
-    {
+    int size() {
         int currentSize = infoMemSize;
         currentSize += systemMemSize;
         currentSize += debugMemSize;

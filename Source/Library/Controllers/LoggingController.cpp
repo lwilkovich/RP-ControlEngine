@@ -46,11 +46,11 @@ LoggingController::LoggingController(Config *config)
     }
 
     try {
-        // _INFO(getClass(), getDesc(), "File Log Location: " + logFile);
+        // _INFO(getTag(), getDesc(), "File Log Location: " + logFile);
         fout.open(fileLocation);
     }
     catch (...) {
-        // _ERROR(getClass(), getDesc(), "Failed To Open Log File");
+        // _ERROR(getTag(), getDesc(), "Failed To Open Log File");
     }
 
     funcDict["Info"] = &LoggingController::logInfo;
@@ -225,29 +225,34 @@ void LoggingController::logError(std::array<std::string, 4> holder, LogThroughpu
 
 int LoggingController::startThread()
 {
-    CpuLimiter limiter(cpuUsage);
+    try {
+        CpuLimiter limiter(cpuUsage);
+        LogThroughput *batchEntry = new LogThroughput();
+        while (1) {
+            if (mLogger.empty() == false) {
+                // std::cout << mLogger.empty() << std::endl;
+                std::array<std::string, 4> holder = mLogger.pop();
+                // std::string logRecord = buildLogRecord(holder);
+                // json logJson = buildLogJson(holder);
 
-    LogThroughput *batchEntry = new LogThroughput();
-    while (1) {
-        if (mLogger.empty() == false) {
-            // std::cout << mLogger.empty() << std::endl;
-            std::array<std::string, 4> holder = mLogger.pop();
-            // std::string logRecord = buildLogRecord(holder);
-            // json logJson = buildLogJson(holder);
+                MFP func = funcDict[holder[2]];
+                (this->*func)(holder, batchEntry);
+            }
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsedSeconds = end - batchEntry->getQTime();
+            float elapsedTime = 60.0;
+            if (elapsedSeconds.count() > elapsedTime) {
+                batchEntry->close(end);
+                cutBatchEntry(batchEntry, elapsedTime);
+                batchEntry = new LogThroughput();
+            }
 
-            MFP func = funcDict[holder[2]];
-            (this->*func)(holder, batchEntry);
+            limiter.CalculateAndSleep();
         }
-        auto end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsedSeconds = end - batchEntry->getQTime();
-        float elapsedTime = 60.0;
-        if (elapsedSeconds.count() > elapsedTime) {
-            batchEntry->close(end);
-            cutBatchEntry(batchEntry, elapsedTime);
-            batchEntry = new LogThroughput();
-        }
-
-        limiter.CalculateAndSleep();
+    }
+    catch (const std::exception& e) {
+        ERROR(getTag(), getDesc(), e.what());
+        return 1;
     }
     return 0;
 }

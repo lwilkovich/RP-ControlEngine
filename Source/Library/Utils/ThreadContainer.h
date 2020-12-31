@@ -20,16 +20,14 @@ namespace Engine {
         int statusCode = 0;
         std::thread controllerThread;
 
-        void threadRuntime()
-        {
+        void threadRuntime() {
             std::string threadName = _THREAD_PREFIX + controller->getTag().substr(0, 11);
             pthread_setname_np(pthread_self(), threadName.c_str());
             pid = getpid();
             SYSTEM(getTag(), "Temp", stringbuilder() << "Thread Name Set: { " << threadName << " } PID: { " << pid << " }");
             try {
                 statusCode = controller->startThread();
-            }
-            catch (const std::exception &ex) {
+            } catch (const std::exception &ex) {
                 std::cout << "Error occurred: " << ex.what() << std::endl;
                 statusCode = 1;
             }
@@ -38,16 +36,14 @@ namespace Engine {
       public:
         ThreadContainer(std::shared_ptr<Controller> shared_c) { controller = shared_c; }
         ~ThreadContainer() {}
-        int startThread()
-        {
+        int startThread() {
             try {
                 if (controllerThread.joinable()) {
                     controllerThread.join();
                 }
                 statusCode = 0;
                 controllerThread = std::thread(&ThreadContainer::threadRuntime, this);
-            }
-            catch (const std::exception &ex) {
+            } catch (const std::exception &ex) {
                 std::cout << "Error occurred: " << ex.what() << std::endl;
                 statusCode = 1;
             }

@@ -31,15 +31,13 @@ namespace Engine {
         int getStatusInt() { return 0; }
         bool getAutoRestartFlag() { return false; }
 
-        int pushControllerPool(std::shared_ptr<Controller> controller)
-        {
+        int pushControllerPool(std::shared_ptr<Controller> controller) {
             std::shared_ptr<ThreadContainer> tc(new ThreadContainer(controller));
             threadContainerPool.push_back(tc);
             return 0;
         }
 
-        int startThread()
-        {
+        int startThread() {
             CpuLimiter limiter(5);
 
             for (unsigned int i = 0; i < threadContainerPool.size(); i++) {
@@ -60,8 +58,7 @@ namespace Engine {
                             if (ret != 0) {
                                 ERROR(getTag(), getDesc(), stringbuilder() << indexTag << " Restart Return Code: { " << ret << " }");
                             }
-                        }
-                        else {
+                        } else {
                             WARNING(getTag(), getDesc(), stringbuilder() << indexTag << " Perhaps Turn On Auto-Restart-Flag: { " << autoRestart << " }");
                             WARNING(getTag(), getDesc(), stringbuilder() << indexTag << " Setting Dead Thread Status Code");
                             threadContainerPool[i]->setDeadThreadStatusCode();

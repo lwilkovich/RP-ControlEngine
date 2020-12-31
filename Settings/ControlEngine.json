@@ -39,7 +39,7 @@
     "NetworkConnectionController": {
         "Enabled": true,
         "Thread-Count": 1,
-        "Cpu-Usage": 5,
+        "Cpu-Usage": 1,
         "Auto-Restart": true
     }
 }

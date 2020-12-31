@@ -17,6 +17,7 @@
 #include <unordered_map>
 
 typedef nlohmann::json json;
+
 namespace Engine {
 
     struct loggingFlags {
@@ -43,8 +44,6 @@ namespace Engine {
 
         std::string fileLocation;
         bool autoRestartFlag;
-
-        // _network::Network& network = _network::Network::getNetwork();
 
         typedef void (LoggingController::*MFP)(std::array<std::string, 4> holder, LogThroughput *);
         std::unordered_map<std::string, MFP> funcDict;

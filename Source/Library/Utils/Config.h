@@ -17,13 +17,11 @@ class Config {
   public:
     Config() {}
     json settings;
-    int load(const char *configLocation)
-    {
+    int load(const char *configLocation) {
         try {
             std::ifstream ifs(configLocation);
             settings = json::parse(ifs);
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             std::cerr << e.what() << std::endl;
             return 1;
         }
