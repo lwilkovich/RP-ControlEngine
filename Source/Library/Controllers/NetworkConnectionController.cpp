@@ -22,6 +22,7 @@ int NetworkConnectionController::startThread() {
         CpuLimiter limiter(cpuUsage);
         while (1) {
             if ((networkInterface.networkList[0].socketClient->getConnectionStatus() == false) and (state == TO_BUILD)) {
+                INFO(getTag(), getDesc(), stringbuilder() << "Signaling Socket To Build");
                 networkInterface.networkList[0].socketClient->createSocket();
                 networkInterface.networkList[0].socketClient->buildInternalSocketAddress();
                 networkInterface.networkList[0].socketClient->bindSocket();
@@ -30,6 +31,7 @@ int NetworkConnectionController::startThread() {
             }
             if (state == TO_CONNECT) {
                 if (networkInterface.networkList[0].socketClient->acceptSocket() == 0) {
+                    INFO(getTag(), getDesc(), stringbuilder() << "Network Connection Successful");
                     state = CONNECTED;
                 }
             }
@@ -40,6 +42,10 @@ int NetworkConnectionController::startThread() {
             if (state == CONNECTED) { 
                 networkInterface.networkList[0].socketClient->ping();
             }
+            if ((getAutoReconnectFlag()) and (state == DISCONNECTED)) {
+                INFO(getTag(), getDesc(), stringbuilder() << "Signaling Socket To Rebuild");
+                state = TO_BUILD;
+            } 
             usleep(1000000 * 1);
             limiter.CalculateAndSleep();
         }

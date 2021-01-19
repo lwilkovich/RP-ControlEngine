@@ -26,7 +26,7 @@ namespace Engine {
       public:
         ThreadOrchestrator() {}
         const std::string &getTag() { return TAG; }
-        std::string getDesc() { return "temp"; }
+        std::string getDesc() { return ""; }
         std::string getStatus() { return "rew"; }
         int getStatusInt() { return 0; }
         bool getAutoRestartFlag() { return false; }

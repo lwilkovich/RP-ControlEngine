@@ -31,11 +31,14 @@ namespace Network {
       NetworkConnectionController(Config *config);
       ~NetworkConnectionController() {}
       const std::string &getTag() { return TAG; }
-      std::string getDesc() { return "controllerData.classDescription"; }
+      std::string getDesc() { return ""; }
       std::string getStatus() { return "hello"; }
       int getStatusInt() { return 1; }
       int startThread();
+
+      //Config Flags
       bool getAutoRestartFlag() { return false; }
+      bool getAutoReconnectFlag() { return true; }
 
       // Non-Controller Interface
       void connectionTCP();

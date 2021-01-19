@@ -34,7 +34,7 @@ namespace Engine {
             cpuStart = std::clock();
         }
         const std::string getTag() { return TAG; }
-        const std::string getDesc() { return "Temp"; }
+        const std::string getDesc() { return ""; }
         void CalculateAndSleep() {
             if (cpuPercentage == 100) {
                 return;

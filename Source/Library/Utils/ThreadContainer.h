@@ -24,7 +24,7 @@ namespace Engine {
             std::string threadName = _THREAD_PREFIX + controller->getTag().substr(0, 11);
             pthread_setname_np(pthread_self(), threadName.c_str());
             pid = getpid();
-            SYSTEM(getTag(), "Temp", stringbuilder() << "Thread Name Set: { " << threadName << " } PID: { " << pid << " }");
+            SYSTEM(getTag(), "", stringbuilder() << "Thread Name Set: { " << threadName << " } PID: { " << pid << " }");
             try {
                 statusCode = controller->startThread();
             } catch (const std::exception &ex) {

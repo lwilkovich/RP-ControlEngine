@@ -52,7 +52,7 @@ namespace Engine {
         LoggingController(Config *config);
         ~LoggingController() {}
         const std::string &getTag() { return TAG; }
-        std::string getDesc() { return "Temp"; }
+        std::string getDesc() { return ""; }
         std::string getStatus() { return "Status"; }
         int getStatusInt() { return 1; }
         int startThread();

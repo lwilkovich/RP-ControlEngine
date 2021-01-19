@@ -92,7 +92,7 @@ int TcpSocketClient::ping() {
 
 ssize_t TcpSocketClient::sendData(const char *message) {
     if (connectionStatus == true) {
-        size_t length = strlen(message);
+        int length = strlen(message);
         ssize_t n = send(socketObject, &length, sizeof(length), 0);
         if (n == -1) {
             ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Send Failure: { " << n << " }");
