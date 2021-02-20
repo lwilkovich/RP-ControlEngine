@@ -92,24 +92,29 @@ int TcpSocketClient::ping() {
 
 ssize_t TcpSocketClient::sendData(const char *message) {
     if (connectionStatus == true) {
+        sendMutex.lock();
         int length = strlen(message);
         ssize_t n = send(socketObject, &length, sizeof(length), 0);
         if (n == -1) {
             ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Send Failure: { " << n << " }");
             closeSocket();
+            sendMutex.unlock();
             return -1;
         }
         n = send(socketObject, message, length, 0);
         if (n == -1) {
             ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Send Failure: {" << n << " }");
             closeSocket();
+            sendMutex.unlock();
             return -1;
         }
         SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Sent Message Size: { " << n << " }");
+        sendMutex.unlock();
         return n;
     }
     else {
         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Not Connected");
+        sendMutex.unlock();
         return -1;
     }
 }

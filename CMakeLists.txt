@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(ControlEngine)
 
+option(BUILD_TEST_DEPS "" ON)
+
 file(GLOB CE_SRC "Source/*.cpp" /
     "Source/**/*.cpp"
     "Source/**/**/*.cpp"
@@ -20,3 +22,17 @@ if (MSVC)
 else ()
     target_compile_options(${CE_PROJECT_NAME} PRIVATE -Wall -Wno-long-long -pedantic -Werror)
 endif ()
+
+if (BUILD_TEST_DEPS)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    configure_file(CMakeLists.txt.gtest
+            googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+    add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+            ${CMAKE_BINARY_DIR}/googletest-build)
+endif ()
+
+add_subdirectory(Test)

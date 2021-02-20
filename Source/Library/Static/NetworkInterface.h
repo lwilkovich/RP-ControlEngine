@@ -9,7 +9,6 @@
 
 namespace Engine {
     namespace Network {
-
         struct SocketDescription {
             std::string hostAddress;
             std::string description = "";

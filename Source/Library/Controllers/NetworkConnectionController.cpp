@@ -5,11 +5,13 @@ using namespace Network;
 
 #define _CPU_USAGE "Cpu-Usage"
 #define _AUTO_RESTART "Auto-Restart"
+#define _AUTO_RECONNECT "Auto-Reconnect"
 
 NetworkConnectionController::NetworkConnectionController(Config *config) {
     try {
         cpuUsage = config->settings[TAG][_CPU_USAGE];
         autoRestartFlag = config->settings[TAG][_AUTO_RESTART];
+        autoReconnectFlag = config->settings[TAG][_AUTO_RECONNECT];
     }
     catch (const json::exception& e) {
         ERROR(getTag(), getDesc(), e.what());
@@ -34,6 +36,9 @@ int NetworkConnectionController::startThread() {
                     INFO(getTag(), getDesc(), stringbuilder() << "Network Connection Successful");
                     state = CONNECTED;
                 }
+                else {
+                    usleep(1000000 * 1);
+                }
             }
             if ((networkInterface.networkList[0].socketClient->getConnectionStatus() == false) and (state == CONNECTED)) {
                 INFO(getTag(), getDesc(), stringbuilder() << "Network Disconnect Identified");
@@ -46,7 +51,6 @@ int NetworkConnectionController::startThread() {
                 INFO(getTag(), getDesc(), stringbuilder() << "Signaling Socket To Rebuild");
                 state = TO_BUILD;
             } 
-            usleep(1000000 * 1);
             limiter.CalculateAndSleep();
         }
     }

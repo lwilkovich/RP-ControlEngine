@@ -16,6 +16,7 @@
 #include <iostream>
 #include <signal.h>
 #include <exception>
+#include <mutex>
 
 #define MAX_PACKET_SIZE 64 * 1024
 
@@ -42,6 +43,7 @@ namespace Network {
             char mBuffer[1];
             bool connectionStatus = false;
 
+            std::mutex sendMutex;
 
             fd_set readSet;
             struct timeval timeout = {1, 0};
@@ -54,6 +56,10 @@ namespace Network {
                 memset(&cliaddr, 0, sizeof(cliaddr));
             }
             TcpSocketClient() {}
+            TcpSocketClient(const TcpSocketClient &tsc) {
+                hostAddress = tsc.hostAddress;
+                hostPort = tsc.hostPort;
+            } 
             
             std::string getTag() {
                 return TAG;

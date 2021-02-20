@@ -1,5 +1,5 @@
-#ifndef __NETWORKCONNECTIONCONTROLLER_H__
-#define __NETWORKCONNECTIONCONTROLLER_H__
+#ifndef __NETWORKWRITERCONTROLLER_H__
+#define __NETWORKWRITERCONTROLLER_H__
 
 #include "../../Third-Party/json.hpp"
 #include "Controller.h"
@@ -16,22 +16,18 @@ typedef nlohmann::json json;
 
 namespace Engine {
 namespace Network {
-
-  enum NetworkConnectionControllerState { TO_BUILD, TO_CONNECT, CONNECTED, DISCONNECTED };
-
-  class NetworkConnectionController : public Controller {
+  class NetworkWriterController : public Controller {
     private:
-      std::string TAG = "NetworkConnectionController";
+      std::string TAG = "NetworkWriterController";
 
       // Config
       int cpuUsage;
       bool autoRestartFlag;
-      bool autoReconnectFlag;
 
       NetworkInterface& networkInterface = NetworkInterface::getNetwork();
     public:
-      NetworkConnectionController(Config *config);
-      ~NetworkConnectionController() {}
+      NetworkWriterController(Config *config);
+      ~NetworkWriterController() {}
       const std::string &getTag() { return TAG; }
       std::string getDesc() { return ""; }
       std::string getStatus() { return ""; }
@@ -40,7 +36,6 @@ namespace Network {
 
       // Config
       bool getAutoRestartFlag() { return autoRestartFlag; }
-      bool getAutoReconnectFlag() { return autoReconnectFlag; }
   };
 }
 }

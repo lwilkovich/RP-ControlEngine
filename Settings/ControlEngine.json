@@ -40,6 +40,13 @@
         "Enabled": true,
         "Thread-Count": 1,
         "Cpu-Usage": 1,
+        "Auto-Restart": true,
+        "Auto-Reconnect": true
+    },
+    "NetworkWriterController": {
+        "Enabled": true,
+        "Thread-Count": 1,
+        "Cpu-Usage": 1,
         "Auto-Restart": true
     }
 }
