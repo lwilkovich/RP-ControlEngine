@@ -12,9 +12,13 @@ NetworkConnectionController::NetworkConnectionController(Config *config) {
         cpuUsage = config->settings[TAG][_CPU_USAGE];
         autoRestartFlag = config->settings[TAG][_AUTO_RESTART];
         autoReconnectFlag = config->settings[TAG][_AUTO_RECONNECT];
-    }
-    catch (const json::exception& e) {
+
+        INFO(getTag(), getDesc(), stringbuilder() << "Fetching Network Description...");
+        networkInterfaceIndex = networkInterface.fetchNetworkDescriptionConnectionController();
+        INFO(getTag(), getDesc(), stringbuilder() << "Fetched Network Description: { " << networkInterfaceIndex << " }");
+    } catch (const std::exception &e) {
         ERROR(getTag(), getDesc(), e.what());
+        throw e;
     }
 }
 
@@ -23,38 +27,37 @@ int NetworkConnectionController::startThread() {
     try {
         CpuLimiter limiter(cpuUsage);
         while (1) {
-            if ((networkInterface.networkList[0].socketClient->getConnectionStatus() == false) and (state == TO_BUILD)) {
+            if ((networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->getConnectionStatus() == false) and (state == TO_BUILD)) {
                 INFO(getTag(), getDesc(), stringbuilder() << "Signaling Socket To Build");
-                networkInterface.networkList[0].socketClient->createSocket();
-                networkInterface.networkList[0].socketClient->buildInternalSocketAddress();
-                networkInterface.networkList[0].socketClient->bindSocket();
-                networkInterface.networkList[0].socketClient->listenSocket();
+                networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->createSocket();
+                networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->buildInternalSocketAddress();
+                networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->bindSocket();
+                networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->listenSocket();
                 state = TO_CONNECT;
             }
             if (state == TO_CONNECT) {
-                if (networkInterface.networkList[0].socketClient->acceptSocket() == 0) {
+                if (networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->acceptSocket() == 0) {
                     INFO(getTag(), getDesc(), stringbuilder() << "Network Connection Successful");
                     state = CONNECTED;
-                }
-                else {
+                } else {
                     usleep(1000000 * 1);
                 }
             }
-            if ((networkInterface.networkList[0].socketClient->getConnectionStatus() == false) and (state == CONNECTED)) {
+            if ((networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->getConnectionStatus() == false) and (state == CONNECTED)) {
                 INFO(getTag(), getDesc(), stringbuilder() << "Network Disconnect Identified");
                 state = DISCONNECTED;
             }
-            if (state == CONNECTED) { 
-                networkInterface.networkList[0].socketClient->ping();
+            if (state == CONNECTED) {
+                networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->ping();
+                usleep(1000000 * 5);
             }
             if ((getAutoReconnectFlag()) and (state == DISCONNECTED)) {
                 INFO(getTag(), getDesc(), stringbuilder() << "Signaling Socket To Rebuild");
                 state = TO_BUILD;
-            } 
+            }
             limiter.CalculateAndSleep();
         }
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         ERROR(getTag(), getDesc(), e.what());
         return 1;
     }

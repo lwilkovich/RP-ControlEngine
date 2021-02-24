@@ -15,8 +15,7 @@
 
 using namespace Engine;
 
-LoggingController::LoggingController(Config *config)
-{
+LoggingController::LoggingController(Config *config) {
     try {
         screen.info = config->settings[TAG][_TOGGLE_FLAG][_SCREEN][_INFO];
         screen.debug = config->settings[TAG][_TOGGLE_FLAG][_SCREEN][_DEBUG];
@@ -40,16 +39,14 @@ LoggingController::LoggingController(Config *config)
         fileLocation = config->settings[TAG][_FILE_LOCATION];
         cpuUsage = config->settings[TAG][_CPU_USAGE];
         autoRestartFlag = config->settings[TAG][_AUTO_RESTART];
-    }
-    catch (const json::exception &e) {
+    } catch (const json::exception &e) {
         std::cout << e.what() << std::endl;
     }
 
     try {
         // _INFO(getTag(), getDesc(), "File Log Location: " + logFile);
         fout.open(fileLocation);
-    }
-    catch (...) {
+    } catch (...) {
         // _ERROR(getTag(), getDesc(), "Failed To Open Log File");
     }
 
@@ -60,8 +57,7 @@ LoggingController::LoggingController(Config *config)
     funcDict["Error"] = &LoggingController::logError;
 }
 
-std::string LoggingController::buildLogRecord(std::array<std::string, 4> holder)
-{
+std::string LoggingController::buildLogRecord(std::array<std::string, 4> holder) {
     std::stringstream a_stream;
     a_stream << _WHITE_FONT;
     a_stream << _DateTime::grabDate();
@@ -82,8 +78,7 @@ std::string LoggingController::buildLogRecord(std::array<std::string, 4> holder)
     return a_stream.str();
 }
 
-json LoggingController::buildLogJson(std::array<std::string, 4> holder)
-{
+json LoggingController::buildLogJson(std::array<std::string, 4> holder) {
     json jsonObject;
     jsonObject["Packet-Type"] = "Log";
     jsonObject["Origin"] = "Engine";
@@ -112,8 +107,7 @@ json LoggingController::buildLogJson(std::array<std::string, 4> holder)
     return jsonObject;
 }
 
-void LoggingController::cutBatchEntry(LogThroughput *batchEntry, float elapsedTime)
-{
+void LoggingController::cutBatchEntry(LogThroughput *batchEntry, float elapsedTime) {
     SYSTEM(getTag(), getDesc(), stringbuilder() << "Total Log Count: " << batchEntry->getTotalCount());
     SYSTEM(getTag(), getDesc(), stringbuilder() << "Sys Log Count: " << batchEntry->getSystemCount());
     SYSTEM(getTag(), getDesc(), stringbuilder() << "Info Log Count: " << batchEntry->getInfoCount());
@@ -124,27 +118,22 @@ void LoggingController::cutBatchEntry(LogThroughput *batchEntry, float elapsedTi
     SYSTEM(getTag(), getDesc(), stringbuilder() << "Log Mem Size: " << (batchEntry->size()) << " Bytes");
 }
 
-void LoggingController::screenLogOut(std::string record)
-{
+void LoggingController::screenLogOut(std::string record) {
     std::cout << record;
 }
-void LoggingController::screenLogErr(std::string record)
-{
+void LoggingController::screenLogErr(std::string record) {
     std::cerr << record;
 }
-void LoggingController::networkLog(std::string record)
-{
+void LoggingController::networkLog(std::string record) {
     record += '\r';
-    // network.socketDesc[socketIndex].writeBuffer.push(record);
+    networkInterface.getNetworkList()[networkInterfaceIndex].writeBuffer.push(record);
 }
-void LoggingController::fileLog(std::string record)
-{
+void LoggingController::fileLog(std::string record) {
     fout << record;
     fout.flush();
 }
 
-void LoggingController::logInfo(std::array<std::string, 4> holder, LogThroughput *batchEntry)
-{
+void LoggingController::logInfo(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
     json logJson = buildLogJson(holder);
     batchEntry->pushInfoLog(record);
@@ -152,15 +141,14 @@ void LoggingController::logInfo(std::array<std::string, 4> holder, LogThroughput
         screenLogOut(record);
     }
     if (network.info) {
-        networkLog(logJson.dump(4));
+        networkLog(logJson.dump(4, ' ', true));
     }
     if (file.info) {
         fileLog(record);
     }
 }
 
-void LoggingController::logSystem(std::array<std::string, 4> holder, LogThroughput *batchEntry)
-{
+void LoggingController::logSystem(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
     json logJson = buildLogJson(holder);
     batchEntry->pushSysLog(record);
@@ -168,15 +156,14 @@ void LoggingController::logSystem(std::array<std::string, 4> holder, LogThroughp
         screenLogOut(record);
     }
     if (network.system) {
-        networkLog(logJson.dump(4));
+        networkLog(logJson.dump(4, ' ', true));
     }
     if (file.system) {
         fileLog(record);
     }
 }
 
-void LoggingController::logDebug(std::array<std::string, 4> holder, LogThroughput *batchEntry)
-{
+void LoggingController::logDebug(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
     json logJson = buildLogJson(holder);
     batchEntry->pushDebugLog(record);
@@ -184,15 +171,14 @@ void LoggingController::logDebug(std::array<std::string, 4> holder, LogThroughpu
         screenLogOut(record);
     }
     if (network.debug) {
-        networkLog(logJson.dump(4));
+        networkLog(logJson.dump(4, ' ', true));
     }
     if (file.debug) {
         fileLog(record);
     }
 }
 
-void LoggingController::logWarning(std::array<std::string, 4> holder, LogThroughput *batchEntry)
-{
+void LoggingController::logWarning(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
     json logJson = buildLogJson(holder);
     batchEntry->pushWarningLog(record);
@@ -200,15 +186,14 @@ void LoggingController::logWarning(std::array<std::string, 4> holder, LogThrough
         screenLogOut(record);
     }
     if (network.warning) {
-        networkLog(logJson.dump(4));
+        networkLog(logJson.dump(4, ' ', true));
     }
     if (network.warning) {
         fileLog(record);
     }
 }
 
-void LoggingController::logError(std::array<std::string, 4> holder, LogThroughput *batchEntry)
-{
+void LoggingController::logError(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
     json logJson = buildLogJson(holder);
     batchEntry->pushErrorLog(record);
@@ -216,15 +201,14 @@ void LoggingController::logError(std::array<std::string, 4> holder, LogThroughpu
         screenLogErr(record);
     }
     if (network.error) {
-        networkLog(logJson.dump(4));
+        networkLog(logJson.dump(4, ' ', true));
     }
     if (file.error) {
         fileLog(record);
     }
 }
 
-int LoggingController::startThread()
-{
+int LoggingController::startThread() {
     try {
         CpuLimiter limiter(cpuUsage);
         LogThroughput *batchEntry = new LogThroughput();
@@ -249,8 +233,7 @@ int LoggingController::startThread()
 
             limiter.CalculateAndSleep();
         }
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         ERROR(getTag(), getDesc(), e.what());
         return 1;
     }

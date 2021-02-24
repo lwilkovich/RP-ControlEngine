@@ -3,6 +3,7 @@
 
 #include "../../Third-Party/json.hpp"
 #include "../Static/LogQueue.h"
+#include "../Static/NetworkInterface.h"
 #include "../Utils/Config.h"
 #include "../Utils/CpuLimiter.h"
 #include "../Utils/LogThroughput.h"
@@ -44,6 +45,10 @@ namespace Engine {
 
         std::string fileLocation;
         bool autoRestartFlag;
+
+        int networkInterfaceIndex = 0;
+
+        Network::NetworkInterface &networkInterface = Network::NetworkInterface::getNetwork();
 
         typedef void (LoggingController::*MFP)(std::array<std::string, 4> holder, LogThroughput *);
         std::unordered_map<std::string, MFP> funcDict;

@@ -1,31 +1,31 @@
 #ifndef __TCPSOCKETCLIENT_H__
 #define __TCPSOCKETCLIENT_H__
 
-#include <stdio.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 #include "../Utils/Config.h"
 #include "../Utils/_Logger.h"
 #include "../Utils/_String.h"
-#include <iostream>
-#include <signal.h>
+#include <arpa/inet.h>
 #include <exception>
+#include <fcntl.h>
+#include <iostream>
 #include <mutex>
+#include <netinet/in.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #define MAX_PACKET_SIZE 64 * 1024
 
 namespace Engine {
-namespace Network {
-    enum CurrentReadingState { MESSAGE_SIZE, MESSAGE };
+    namespace Network {
+        enum CurrentReadingState { MESSAGE_SIZE, MESSAGE };
 
-    class TcpSocketClient {
-        private:
+        class TcpSocketClient {
+          private:
             const std::string TAG = "TcpSocketClient";
 
             std::string hostAddress = "";
@@ -49,7 +49,8 @@ namespace Network {
             struct timeval timeout = {1, 0};
 
             int socketObject = 0;
-        public:
+
+          public:
             TcpSocketClient(std::string addr, int port) {
                 hostAddress = addr;
                 hostPort = port;
@@ -59,16 +60,12 @@ namespace Network {
             TcpSocketClient(const TcpSocketClient &tsc) {
                 hostAddress = tsc.hostAddress;
                 hostPort = tsc.hostPort;
-            } 
-            
-            std::string getTag() {
-                return TAG;
             }
 
+            std::string getTag() { return TAG; }
+
             int getConnectionStatus();
-            void setConnectionStatus(int b) {
-                connectionStatus = b;
-            }
+            void setConnectionStatus(int b) { connectionStatus = b; }
 
             int createSocket();
 
@@ -82,14 +79,15 @@ namespace Network {
             int bindSocket();
             int listenSocket();
             int acceptSocket();
-            
+
             std::vector<int8_t> readData();
 
             int ping();
             ssize_t sendData(const char *message);
-        private:
+
+          private:
             ssize_t sendData(const void *buffer, int size);
-    };
-}
-}
+        };
+    } // namespace Network
+} // namespace Engine
 #endif

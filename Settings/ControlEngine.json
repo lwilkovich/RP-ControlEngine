@@ -21,11 +21,11 @@
                 "Error": true
             },
             "Network": {
-                "Info": false,
-                "Debug": false,
-                "Warning": false,
+                "Info": true,
+                "Debug": true,
+                "Warning": true,
                 "System": false,
-                "Error": false
+                "Error": true
             },
             "File": {
                 "Info": false,
@@ -48,5 +48,14 @@
         "Thread-Count": 1,
         "Cpu-Usage": 1,
         "Auto-Restart": true
-    }
+    },
+    "NetworkInterface": [
+        {
+            "Description": "Logs",
+            "Address": "",
+            "Port": 7225,
+            "Protocal": "TCP",
+            "Connection-Type": "Server"
+        }
+    ]
 }

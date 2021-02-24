@@ -1,5 +1,6 @@
 #include "Library/Controllers/LoggingController.h"
 #include "Library/Controllers/NetworkConnectionController.h"
+#include "Library/Controllers/NetworkWriterController.h"
 #include "Library/Controllers/ThreadOrchestrator.h"
 #include "Library/Utils/Config.h"
 #include "Library/Utils/CpuLimiter.h"
@@ -9,9 +10,9 @@
 #include "limits.h"
 #include <iostream>
 #include <memory>
+#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <signal.h>
 
 #define cliError " *** Failing reading the command line arguments ***"
 
@@ -24,6 +25,7 @@ using namespace Network;
 #define _THREAD_COUNT "Thread-Count"
 #define _LOGGINGCONTROLLER "LoggingController"
 #define _NETWORKCONNECTIONCONTROLLER "NetworkConnectionController"
+#define _NETWORKWRITERCONTROLLER "NetworkWriterController"
 
 std::vector<std::string> readCommandLineArgs(int argc, char *argv[]) {
     if (argc < 2) {
@@ -44,6 +46,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    //////////////////////////////
+    // Interface Setup
+    NetworkInterface &n = NetworkInterface::getNetwork();
+    n.iniNetworkInterface(&config);
+
+    //////////////////////////////
+    // Thread & Controller Setup
     std::shared_ptr<ThreadOrchestrator> threadOrchestrator(new ThreadOrchestrator);
 
     if (config.settings[_LOGGINGCONTROLLER][_ENABLED]) {
@@ -56,6 +65,12 @@ int main(int argc, char *argv[]) {
         for (size_t i = 0; i < config.settings[_NETWORKCONNECTIONCONTROLLER][_THREAD_COUNT]; i++) {
             std::shared_ptr<NetworkConnectionController> ncc(new NetworkConnectionController(&config));
             threadOrchestrator->pushControllerPool(ncc);
+        }
+    }
+    if (config.settings[_NETWORKWRITERCONTROLLER][_ENABLED]) {
+        for (size_t i = 0; i < config.settings[_NETWORKWRITERCONTROLLER][_THREAD_COUNT]; i++) {
+            std::shared_ptr<NetworkWriterController> nwc(new NetworkWriterController(&config));
+            threadOrchestrator->pushControllerPool(nwc);
         }
     }
 

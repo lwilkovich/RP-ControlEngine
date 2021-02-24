@@ -11,8 +11,7 @@ int TcpSocketClient::createSocket() {
     if ((socketObject = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Socket Creation Error");
         return 1;
-    }
-    else {
+    } else {
         FD_ZERO(&readSet);
         FD_SET(socketObject, &readSet);
         fcntl(socketObject, F_SETFL, fcntl(socketObject, F_GETFL) | O_NONBLOCK);
@@ -42,7 +41,7 @@ int TcpSocketClient::listenSocket() {
 int TcpSocketClient::acceptSocket() {
     int tempSocketObject;
 
-    if ((tempSocketObject = accept(socketObject, (struct sockaddr *)&internalSocketAddress, (socklen_t*)&internalSocketAddress)) == -1) {
+    if ((tempSocketObject = accept(socketObject, (struct sockaddr *)&internalSocketAddress, (socklen_t *)&internalSocketAddress)) == -1) {
         SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Error Accepting Socket");
         return 1;
     }
@@ -64,11 +63,11 @@ int TcpSocketClient::buildInternalSocketAddress() {
     internalSocketAddress.sin_addr.s_addr = INADDR_ANY;
     internalSocketAddress.sin_port = htons(hostPort);
 
-    // if(inet_pton(AF_INET, hostAddress.c_str(), &internalSocketAddress.sin_addr)<=0)  
-    // { 
-    //     printf("\nInvalid address/ Address not supported \n"); 
-    //     return -1; 
-    // } 
+    // if(inet_pton(AF_INET, hostAddress.c_str(), &internalSocketAddress.sin_addr)<=0)
+    // {
+    //     printf("\nInvalid address/ Address not supported \n");
+    //     return -1;
+    // }
 
     SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Internal Socket Address Build Success");
     return 0;
@@ -111,8 +110,7 @@ ssize_t TcpSocketClient::sendData(const char *message) {
         SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Sent Message Size: { " << n << " }");
         sendMutex.unlock();
         return n;
-    }
-    else {
+    } else {
         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Not Connected");
         sendMutex.unlock();
         return -1;
@@ -120,7 +118,7 @@ ssize_t TcpSocketClient::sendData(const char *message) {
 }
 
 ssize_t TcpSocketClient::sendData(const void *buffer, int size) {
-    std::cout << "x= "<<(ssize_t)buffer  << " ," << size<< std::endl;
+    std::cout << "x= " << (ssize_t)buffer << " ," << size << std::endl;
     if (connectionStatus == true) {
         ssize_t n = send(socketObject, buffer, size, 0);
         if (n == -1) {
@@ -130,8 +128,7 @@ ssize_t TcpSocketClient::sendData(const void *buffer, int size) {
         }
         SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Sent Message Size: { " << n << " }");
         return n;
-    }
-    else {
+    } else {
         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Not Connected");
         return -1;
     }
@@ -139,7 +136,7 @@ ssize_t TcpSocketClient::sendData(const void *buffer, int size) {
 
 void TcpSocketClient::closeSocketUnused(int unused) {
     closeSocket();
-    return; 
+    return;
 }
 
 int TcpSocketClient::closeSocket() {
@@ -178,9 +175,7 @@ std::vector<int8_t> TcpSocketClient::readData() {
             }
             if (state == MESSAGE) {
                 while (readRemaining > 0) {
-                    ssize_t n = recv(socketObject, readBuffer.data()+(messageSize-readRemaining),
-                        readRemaining > MAX_PACKET_SIZE ? MAX_PACKET_SIZE : readRemaining,
-                        0);
+                    ssize_t n = recv(socketObject, readBuffer.data() + (messageSize - readRemaining), readRemaining > MAX_PACKET_SIZE ? MAX_PACKET_SIZE : readRemaining, 0);
                     SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE: {" << n << " }");
                     if (n == -1) {
                         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Read Failure");
