@@ -1,6 +1,7 @@
 #include "Library/Controllers/LoggingController.h"
 #include "Library/Controllers/NetworkConnectionController.h"
 #include "Library/Controllers/NetworkWriterController.h"
+#include "Library/Controllers/NetworkReaderController.h"
 #include "Library/Controllers/ThreadOrchestrator.h"
 #include "Library/Utils/Config.h"
 #include "Library/Utils/CpuLimiter.h"
@@ -13,6 +14,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "Library/Utils/Buffer.h"
+#include "Library/Utils/TcpMessage.h"
+
 
 #define cliError " *** Failing reading the command line arguments ***"
 
@@ -26,6 +30,7 @@ using namespace Network;
 #define _LOGGINGCONTROLLER "LoggingController"
 #define _NETWORKCONNECTIONCONTROLLER "NetworkConnectionController"
 #define _NETWORKWRITERCONTROLLER "NetworkWriterController"
+#define _NETWORKREADERCONTROLLER "NetworkReaderController"
 
 std::vector<std::string> readCommandLineArgs(int argc, char *argv[]) {
     if (argc < 2) {
@@ -39,6 +44,7 @@ std::vector<std::string> readCommandLineArgs(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+
     signal(SIGPIPE, SIG_IGN);
     std::vector<std::string> cli = readCommandLineArgs(argc, argv);
     Config config;
@@ -71,6 +77,12 @@ int main(int argc, char *argv[]) {
         for (size_t i = 0; i < config.settings[_NETWORKWRITERCONTROLLER][_THREAD_COUNT]; i++) {
             std::shared_ptr<NetworkWriterController> nwc(new NetworkWriterController(&config));
             threadOrchestrator->pushControllerPool(nwc);
+        }
+    }
+    if (config.settings[_NETWORKREADERCONTROLLER][_ENABLED]) {
+        for (size_t i = 0; i < config.settings[_NETWORKREADERCONTROLLER][_THREAD_COUNT]; i++) {
+            std::shared_ptr<NetworkReaderController> nrc(new NetworkReaderController(&config));
+            threadOrchestrator->pushControllerPool(nrc);
         }
     }
 

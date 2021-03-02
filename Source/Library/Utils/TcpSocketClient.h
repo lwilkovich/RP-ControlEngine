@@ -17,12 +17,14 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "TcpMessage.h"
+#include "Buffer.h"
 
 #define MAX_PACKET_SIZE 64 * 1024
 
 namespace Engine {
     namespace Network {
-        enum CurrentReadingState { MESSAGE_SIZE, MESSAGE };
+        enum CurrentReadingState { MESSAGE_SIZE, MESSAGE_TYPE, MESSAGE };        
 
         class TcpSocketClient {
           private:
@@ -80,7 +82,7 @@ namespace Engine {
             int listenSocket();
             int acceptSocket();
 
-            std::vector<int8_t> readData();
+            int readData(TcpMessage* message);
 
             int ping();
             ssize_t sendData(const char *message);

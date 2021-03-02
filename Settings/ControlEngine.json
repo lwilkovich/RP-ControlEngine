@@ -8,7 +8,7 @@
     "LoggingController": {
         "Enabled": true,
         "Thread-Count": 1,
-        "Cpu-Usage": 5,
+        "Cpu-Usage": 1,
         "Throughput-Interval": 60.0,
         "Auto-Restart": true,
         "File-Location": "/var/log/ControlEngine.log",
@@ -44,6 +44,12 @@
         "Auto-Reconnect": true
     },
     "NetworkWriterController": {
+        "Enabled": true,
+        "Thread-Count": 1,
+        "Cpu-Usage": 1,
+        "Auto-Restart": true
+    },
+    "NetworkReaderController": {
         "Enabled": true,
         "Thread-Count": 1,
         "Cpu-Usage": 1,

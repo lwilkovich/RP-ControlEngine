@@ -6,12 +6,14 @@
 #include "../Utils/_Logger.h"
 #include "../Utils/_String.h"
 #include "Controller.h"
+#include <chrono> // std::chrono::seconds
 #include <iostream>
 #include <memory>
 #include <pthread.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <thread>
+#include <thread> // std::this_thread::sleep_for
 #include <tuple>
 #include <unistd.h>
 #include <vector>
@@ -38,8 +40,7 @@ namespace Engine {
         }
 
         int startThread() {
-            CpuLimiter limiter(5);
-
+            CpuLimiter limiter(1);
             for (unsigned int i = 0; i < threadContainerPool.size(); i++) {
                 INFO(getTag(), getDesc(), stringbuilder() << threadContainerPool[i]->getTag() << " thread started with code: { " << threadContainerPool[i]->startThread() << " }");
             }
@@ -64,8 +65,8 @@ namespace Engine {
                             threadContainerPool[i]->setDeadThreadStatusCode();
                         }
                     }
-                    limiter.CalculateAndSleep();
                 }
+                limiter.CalculateAndSleep();
             }
             return 0;
         }

@@ -95,19 +95,19 @@ ssize_t TcpSocketClient::sendData(const char *message) {
         int length = strlen(message);
         ssize_t n = send(socketObject, &length, sizeof(length), 0);
         if (n == -1) {
-            ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Send Failure: { " << n << " }");
+            ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Failure: { " << n << " }");
             closeSocket();
             sendMutex.unlock();
             return -1;
         }
         n = send(socketObject, message, length, 0);
         if (n == -1) {
-            ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Send Failure: {" << n << " }");
+            ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Failure: {" << n << " }");
             closeSocket();
             sendMutex.unlock();
             return -1;
         }
-        SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Sent Message Size: { " << n << " }");
+        SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Message Size: { " << n << " }");
         sendMutex.unlock();
         return n;
     } else {
@@ -149,20 +149,18 @@ int TcpSocketClient::closeSocket() {
     return 0;
 }
 
-std::vector<int8_t> TcpSocketClient::readData() {
+int TcpSocketClient::readData(TcpMessage* message) {
     CurrentReadingState state = MESSAGE_SIZE;
-    size_t messageSize;
-
-    std::vector<int8_t> readBuffer;
 
     bool messageReadComplete = false;
-    size_t readRemaining = sizeof(messageSize);
+    size_t readRemaining = sizeof(message->messageSize);
     if (connectionStatus == true) {
         while (messageReadComplete == false) {
             if (state == MESSAGE_SIZE) {
                 while (readRemaining > 0) {
-                    ssize_t n = recv(socketObject, &messageSize, sizeof(messageSize), 0);
-                    SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE_SIZE: {" << n << " }");
+                    SYSTEM(getTag(), "", stringbuilder() << "Receiving Message Size...");
+                    ssize_t n = recv(socketObject, &message->messageSize, sizeof(message->messageSize), 0);
+                    SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE_SIZE: { " << n << " }");
                     if (n == -1) {
                         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Read Failure");
                         closeSocket();
@@ -170,23 +168,42 @@ std::vector<int8_t> TcpSocketClient::readData() {
                     }
                     readRemaining -= n;
                 }
-                readRemaining = messageSize;
-                state = MESSAGE;
+                readRemaining = sizeof(message->messageType);
+                state = MESSAGE_TYPE;
             }
-            if (state == MESSAGE) {
+            else if (state == MESSAGE_TYPE) {
                 while (readRemaining > 0) {
-                    ssize_t n = recv(socketObject, readBuffer.data() + (messageSize - readRemaining), readRemaining > MAX_PACKET_SIZE ? MAX_PACKET_SIZE : readRemaining, 0);
-                    SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE: {" << n << " }");
+                    SYSTEM(getTag(), "", stringbuilder() << "Receiving Message Type...");
+                    ssize_t n = recv(socketObject, &message->messageType, sizeof(message->messageType), 0);
+                    SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE_TYPE: { " << n << " }");
                     if (n == -1) {
                         ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Read Failure");
                         closeSocket();
-                        throw std::runtime_error("Failing Reading Message_Size");
+                        throw std::runtime_error("Failing Reading MESSAGE_TYPE");
                     }
+                    readRemaining -= n;
+                } 
+                readRemaining = message->messageSize;
+                state = MESSAGE;
+            }
+            else if (state == MESSAGE) {
+                message->buffer.Allocate(message->messageSize);
+                BufferCursor cursor = message->buffer.getBufferCursor();
+                while (readRemaining > 0) {
+                    SYSTEM(getTag(), "", stringbuilder() << "Receiving Message Payload...");
+                    ssize_t n = recv(socketObject, cursor.getCursorData(), readRemaining > MAX_PACKET_SIZE ? MAX_PACKET_SIZE : readRemaining, 0);
+                    SYSTEM(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } READ MESSAGE: { " << n << " }");
+                    if (n == -1) {
+                        ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } Read Failure");
+                        closeSocket();
+                        throw std::runtime_error("Failing Reading MESSAGE");
+                    }
+                    cursor.jumpForward(n);
                     readRemaining -= n;
                 }
                 messageReadComplete = true;
             }
         }
     }
-    return readBuffer;
+    return 0;
 }

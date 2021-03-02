@@ -2,6 +2,7 @@
 #define ___QUEUE_H__
 
 #include <queue>
+#include <mutex>
 
 namespace _Queue {
     template <class T> class Queue {

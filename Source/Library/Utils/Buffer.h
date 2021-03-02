@@ -1,15 +1,19 @@
-#ifndef __MESSAGEBUFFER_H__
-#define __MESSAGEBUFFER_H__
+#ifndef __BUFFER_H__
+#define __BUFFER_H__
 
-#include "../Utils/TcpSocketClient.h"
-#include "../Utils/_Queue.h"
-#include "../Utils/_String.h"
+#include "_Queue.h"
+#include "_String.h"
+#include "_Logger.h"
 #include <iostream>
 #include <malloc.h>
 #include <memory>
 #include <queue>
 #include <stdlib.h>
 #include <string>
+#include <mutex>
+#include <memory>
+#include <stdio.h>
+#include <string.h>
 
 #define mallocError " *** Failure Allocating Memory ***"
 #define cursorppOOB " *** Cursor Operator++ OOB ***"
@@ -44,6 +48,9 @@ namespace Engine {
             forwardLength = cap;
             backwardLength = 0;
         }
+        int8_t *getCursorData() {
+            return ptrBuffer;
+        }
         size_t getForwardLength() { return forwardLength; }
         size_t getBackwardLength() { return backwardLength; }
         int8_t *operator++(int) {
@@ -55,6 +62,7 @@ namespace Engine {
                     return ptrBuffer;
                 } else {
                     wrapBuffer();
+                    return ptrBuffer;
                 }
             } catch (const std::exception &e) {
                 ERROR(getTag(), getDesc(), e.what());
@@ -70,6 +78,7 @@ namespace Engine {
                     return ptrBuffer;
                 } else {
                     wrapBuffer();
+                    return ptrBuffer;
                 }
             } catch (const std::exception &e) {
                 ERROR(getTag(), getDesc(), e.what());
@@ -85,6 +94,7 @@ namespace Engine {
                     return ptrBuffer;
                 } else {
                     wrapBuffer();
+                    return ptrBuffer;
                 }
             } catch (const std::exception &e) {
                 ERROR(getTag(), getDesc(), e.what());
@@ -197,6 +207,7 @@ namespace Engine {
                     return 1;
                 }
             }
+            return 1;
         }
         size_t getCapacity() { return capacity; }
         size_t getLength() { return length; }

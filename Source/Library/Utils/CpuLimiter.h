@@ -7,65 +7,68 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <sys/resource.h>
+#include <sys/time.h>
 #include <thread>
 #include <unistd.h>
 
-#define _DEFAULT_CPU_USAGE 20
+#define _DEFAULT_CPU_USAGE 5.0
 
 namespace Engine {
     class CpuLimiter {
       private:
         const std::string TAG = "CpuLimiter";
-        int cpuPercentage;
-        std::clock_t cpuStart;
-        std::chrono::time_point<std::chrono::high_resolution_clock> clockStart;
+        std::string tagPrefix;
+        float cpuPercentage;
 
-        std::clock_t cpuStop;
-        std::chrono::time_point<std::chrono::high_resolution_clock> clockStop;
+        unsigned long long cpuStart;
+        unsigned long long cpuStop;
+        unsigned long long workflowCpuTime;
 
       public:
-        CpuLimiter(int cpu) {
+        CpuLimiter(int cpu, std::string prefix = "") {
+            tagPrefix = prefix;
             if ((cpu < 0) or (cpu > 100)) {
                 cpuPercentage = _DEFAULT_CPU_USAGE;
             } else {
                 cpuPercentage = cpu;
             }
-            clockStart = std::chrono::high_resolution_clock::now();
-            cpuStart = std::clock();
+            cpuStart = getTotalThreadTimeOnCpu();
         }
         const std::string getTag() { return TAG; }
+        const std::string getTagPrefix() { return tagPrefix; }
         const std::string getDesc() { return ""; }
-        void CalculateAndSleep() {
+        const unsigned long long getTotalThreadTimeOnCpu() {
+            struct rusage usage;
+            getrusage(RUSAGE_THREAD, &usage);
+            return (usage.ru_utime.tv_sec * 1000000) + usage.ru_utime.tv_usec + (usage.ru_stime.tv_sec * 1000000) + usage.ru_stime.tv_usec;
+        }
+        void CalculateAndSleep(bool systemDebug = false) {
             if (cpuPercentage == 100) {
                 return;
             }
-            cpuStop = std::clock();
-            clockStop = std::chrono::high_resolution_clock::now();
-            auto cpuMS = 1000.0 * (cpuStop - cpuStart) / CLOCKS_PER_SEC;
-            if (cpuMS < 1) {
-                cpuMS = 1;
-            }
-            auto clockMS = std::chrono::duration<double, std::milli>(clockStop - clockStart).count();
-            if (clockMS < 1) {
-                clockMS = 1;
-            }
-            if (cpuMS / float(clockMS) * 100 < cpuPercentage) {
-                // std::cout << "No Need To Sleep" << std::endl;
+            cpuStop = getTotalThreadTimeOnCpu();
+            workflowCpuTime = cpuStop - cpuStart;
+            if (workflowCpuTime == 0) {
+                cpuStart = getTotalThreadTimeOnCpu();
                 return;
             }
-            double sleepTimeLeft = (cpuPercentage / 100.0) * clockMS;
-            sleepTimeLeft = (cpuMS / float(sleepTimeLeft)) * clockMS - clockMS;
-            // std::cout << "sleepTimeLeft: " << sleepTimeLeft << std::endl;
-            // std::cout << cpuMS << " / " << float(clockMS+sleepTimeLeft) << std::endl;
-            // std::cout << "Real Percentage: " << cpuMS/float(clockMS+sleepTimeLeft) << std::endl;
-            // SYSTEM(getTag(), getDesc(),
-            //     stringbuilder() << cpuMS << " / " << float(clockMS+sleepTimeLeft));
-            // SYSTEM(getTag(), getDesc(),
-            //     stringbuilder() << "Real Percentage: " << cpuMS/float(clockMS+sleepTimeLeft));
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(int64_t(sleepTimeLeft)));
-            clockStart = std::chrono::high_resolution_clock::now();
-            cpuStart = std::clock();
+            double sleepTimeLeft = ((cpuPercentage / 100.0) * workflowCpuTime);
+            sleepTimeLeft = (workflowCpuTime / sleepTimeLeft) * workflowCpuTime - workflowCpuTime;
+            // std::cout << "Workflow Time: " << workflowCpuTime << std::endl;
+            // std::cout << "Time To Equalize: " << sleepTimeLeft << std::endl;
+            // std::cout << "Percentage On Cpu: " << workflowCpuTime / (sleepTimeLeft + workflowCpuTime) << std::endl;
+            // std::cout << "sleepTimeLeft: " << std::fixed << (unsigned int)sleepTimeLeft << std::endl;
+            if (systemDebug) {
+                SYSTEM(getTagPrefix() + getTag(), getDesc(), stringbuilder() << "Timers: " << cpuStart << " | " << cpuStop);
+                SYSTEM(getTagPrefix() + getTag(), getDesc(), stringbuilder() << "Workflow Time: " << workflowCpuTime);
+                SYSTEM(getTagPrefix() + getTag(), getDesc(), stringbuilder() << "Time To Equalize: " << sleepTimeLeft);
+                SYSTEM(getTagPrefix() + getTag(), getDesc(), stringbuilder() << "Percentage On Cpu: " << workflowCpuTime / (sleepTimeLeft + workflowCpuTime));
+                SYSTEM(getTagPrefix() + getTag(), getDesc(), stringbuilder() << "sleepTimeLeft: " << (unsigned int)sleepTimeLeft);
+            }
+            usleep((unsigned int)sleepTimeLeft);
+            cpuStart = getTotalThreadTimeOnCpu();
         }
     };
 } // namespace Engine

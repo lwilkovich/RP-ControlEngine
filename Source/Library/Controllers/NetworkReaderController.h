@@ -1,5 +1,5 @@
-#ifndef __NETWORKCONNECTIONCONTROLLER_H__
-#define __NETWORKCONNECTIONCONTROLLER_H__
+#ifndef __NETWORKREADERCONTROLLER_H__
+#define __NETWORKREADERCONTROLLER_H__
 
 #include "../../Third-Party/json.hpp"
 #include "../Static/NetworkInterface.h"
@@ -12,29 +12,27 @@
 #include <time.h>
 #include <unistd.h>
 #include "../Utils/Buffer.h"
+#include "../Utils/TcpMessage.h"
 
 typedef nlohmann::json json;
 
 namespace Engine {
     namespace Network {
-
-        enum NetworkConnectionControllerState { TO_BUILD, TO_CONNECT, CONNECTED, DISCONNECTED };
-
-        class NetworkConnectionController : public Controller {
+        class NetworkReaderController : public Controller {
           private:
-            std::string TAG = "NetworkConnectionController";
+            std::string TAG = "NetworkReaderController";
 
             // Config
             int cpuUsage;
             bool autoRestartFlag;
-            bool autoReconnectFlag;
+
             int networkInterfaceIndex;
 
             NetworkInterface &networkInterface = NetworkInterface::getNetwork();
 
           public:
-            NetworkConnectionController(Config *config);
-            ~NetworkConnectionController() {}
+            NetworkReaderController(Config *config);
+            ~NetworkReaderController() {}
             const std::string &getTag() { return TAG; }
             std::string getDesc() { return ""; }
             std::string getStatus() { return ""; }
@@ -43,7 +41,6 @@ namespace Engine {
 
             // Config
             bool getAutoRestartFlag() { return autoRestartFlag; }
-            bool getAutoReconnectFlag() { return autoReconnectFlag; }
         };
     } // namespace Network
 } // namespace Engine
