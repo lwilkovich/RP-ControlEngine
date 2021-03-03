@@ -10,16 +10,16 @@ endif ()
 
 file(GLOB UTIL_SRC "../Source/Library/Utils/**.cpp")
 
-file(GLOB DC_TST "./*.cpp" /
+file(GLOB CE_TST "./*.cpp" /
         "./Library/Utils/*.cpp")
 
-list(APPEND DC_SRC ${DC_TST})
-list(FILTER DC_SRC EXCLUDE REGEX ".*ControlEngine.cpp$")
-list(FILTER DC_SRC EXCLUDE REGEX ".*TestClient.cpp$")
-list(FILTER DC_SRC EXCLUDE REGEX ".*GTestMain.cpp$")
+list(APPEND CE_SRC ${CE_TST})
+list(FILTER CE_SRC EXCLUDE REGEX ".*ControlEngine.cpp$")
+list(FILTER CE_SRC EXCLUDE REGEX ".*TestClient.cpp$")
+list(FILTER CE_SRC EXCLUDE REGEX ".*GTestMain.cpp$")
 
 
-add_executable(${GTEST_PROJECT} "GTestMain.cpp" ${DC_SRC})
+add_executable(${GTEST_PROJECT} "GTestMain.cpp" ${CE_SRC})
 target_link_libraries(${GTEST_PROJECT} gtest gtest_main)
 
 add_executable("TestClient" "./Library/Clients/TestClient.cpp" ${UTIL_SRC})

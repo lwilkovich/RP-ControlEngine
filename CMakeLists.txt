@@ -17,11 +17,7 @@ add_executable(${CE_PROJECT_NAME} ${CE_SRC})
 set_target_properties(${CE_PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_definitions(${CE_PROJECT_NAME} PRIVATE "-DDEBUG_BUILD")
 
-if (MSVC)
-    target_compile_options(${CE_PROJECT_NAME} PRIVATE /W4 /WX)
-else ()
-    target_compile_options(${CE_PROJECT_NAME} PRIVATE -Wall -Wno-long-long -pedantic -Werror)
-endif ()
+target_compile_options(${CE_PROJECT_NAME} PRIVATE -Wall -Wno-long-long -pedantic -Werror)
 
 if (BUILD_TEST_DEPS)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
