@@ -86,21 +86,29 @@ int TcpSocketClient::createConnection() {
 
 int TcpSocketClient::ping() {
     std::string mes = "ping";
-    return sendData(mes.c_str());
+    return sendData(mes.c_str(), 4);
 }
 
-ssize_t TcpSocketClient::sendData(const char *message) {
+ssize_t TcpSocketClient::sendData(std::shared_ptr<TcpMessage> message) {
     if (connectionStatus == true) {
         sendMutex.lock();
-        int length = strlen(message);
-        ssize_t n = send(socketObject, &length, sizeof(length), 0);
+        // int length = message->messageSize;
+        // std::cout <<"TESTTEST: "<< message->messageSize << std::endl;
+        ssize_t n = send(socketObject, &message->messageSize, sizeof(message->messageSize), 0);
         if (n == -1) {
             ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Failure: { " << n << " }");
             closeSocket();
             sendMutex.unlock();
             return -1;
         }
-        n = send(socketObject, message, length, 0);
+        n = send(socketObject, &message->messageType, sizeof(message->messageType), 0);
+        if (n == -1) {
+            ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Failure: {" << n << " }");
+            closeSocket();
+            sendMutex.unlock();
+            return -1;
+        }
+        n = send(socketObject, message->buffer->getBufferCursor().getCursorData(), message->messageSize, 0);
         if (n == -1) {
             ERROR(getTag(), "", stringbuilder() << "Socket FD: { " << socketObject << " } SEND Failure: {" << n << " }");
             closeSocket();
@@ -118,7 +126,6 @@ ssize_t TcpSocketClient::sendData(const char *message) {
 }
 
 ssize_t TcpSocketClient::sendData(const void *buffer, int size) {
-    std::cout << "x= " << (ssize_t)buffer << " ," << size << std::endl;
     if (connectionStatus == true) {
         ssize_t n = send(socketObject, buffer, size, 0);
         if (n == -1) {
@@ -149,7 +156,7 @@ int TcpSocketClient::closeSocket() {
     return 0;
 }
 
-int TcpSocketClient::readData(TcpMessage* message) {
+int TcpSocketClient::readData(TcpMessage *message) {
     CurrentReadingState state = MESSAGE_SIZE;
 
     bool messageReadComplete = false;
@@ -170,8 +177,7 @@ int TcpSocketClient::readData(TcpMessage* message) {
                 }
                 readRemaining = sizeof(message->messageType);
                 state = MESSAGE_TYPE;
-            }
-            else if (state == MESSAGE_TYPE) {
+            } else if (state == MESSAGE_TYPE) {
                 while (readRemaining > 0) {
                     SYSTEM(getTag(), "", stringbuilder() << "Receiving Message Type...");
                     ssize_t n = recv(socketObject, &message->messageType, sizeof(message->messageType), 0);
@@ -182,13 +188,12 @@ int TcpSocketClient::readData(TcpMessage* message) {
                         throw std::runtime_error("Failing Reading MESSAGE_TYPE");
                     }
                     readRemaining -= n;
-                } 
+                }
                 readRemaining = message->messageSize;
                 state = MESSAGE;
-            }
-            else if (state == MESSAGE) {
-                message->buffer.Allocate(message->messageSize);
-                BufferCursor cursor = message->buffer.getBufferCursor();
+            } else if (state == MESSAGE) {
+                message->buffer->Allocate(message->messageSize);
+                BufferCursor cursor = message->buffer->getBufferCursor();
                 while (readRemaining > 0) {
                     SYSTEM(getTag(), "", stringbuilder() << "Receiving Message Payload...");
                     ssize_t n = recv(socketObject, cursor.getCursorData(), readRemaining > MAX_PACKET_SIZE ? MAX_PACKET_SIZE : readRemaining, 0);

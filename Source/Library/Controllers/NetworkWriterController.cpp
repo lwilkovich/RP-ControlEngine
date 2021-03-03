@@ -26,8 +26,8 @@ int NetworkWriterController::startThread() {
         while (1) {
             if (networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->getConnectionStatus() == true) {
                 if (networkInterface.getNetworkList()[networkInterfaceIndex].writeBuffer.size() > 0) {
-                    std::string mes = networkInterface.getNetworkList()[networkInterfaceIndex].writeBuffer.pop();
-                    networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->sendData(mes.c_str());
+                    std::shared_ptr<TcpMessage> mes = networkInterface.getNetworkList()[networkInterfaceIndex].writeBuffer.pop();
+                    networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->sendData(mes);
                 }
             }
             limiter.CalculateAndSleep();

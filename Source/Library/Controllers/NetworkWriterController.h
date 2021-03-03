@@ -5,6 +5,7 @@
 #include "../Static/NetworkInterface.h"
 #include "../Utils/Config.h"
 #include "../Utils/CpuLimiter.h"
+#include "../Utils/TcpMessage.h"
 #include "../Utils/_Logger.h"
 #include "../Utils/_String.h"
 #include "Controller.h"

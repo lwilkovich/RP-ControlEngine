@@ -2,8 +2,10 @@
 #define __NETWORKINTERFACE_H__
 
 #include "../Utils/Config.h"
+#include "../Utils/TcpMessage.h"
 #include "../Utils/TcpSocketClient.h"
 #include "../Utils/_Queue.h"
+#include "../Utils/_String.h"
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -31,8 +33,9 @@ namespace Engine {
             bool connectionControllerAttached;
             bool writerControllerAttached;
             bool readerControllerAttached;
-            _Queue::Queue<std::string> writeBuffer;
-            _Queue::Queue<std::string> readBuffer;
+            bool executerControllerAttached;
+            _Queue::Queue<std::shared_ptr<TcpMessage>> writeBuffer;
+            _Queue::Queue<std::shared_ptr<TcpMessage>> readBuffer;
             std::shared_ptr<TcpSocketClient> socketClient;
             NetworkDescription() {}
             NetworkDescription(std::string hA, int hP, std::string desc = "", int sTF = 1, int sSCF = 1) {
@@ -44,9 +47,16 @@ namespace Engine {
                 this->connectionControllerAttached = false;
                 this->writerControllerAttached = false;
                 this->readerControllerAttached = false;
+                this->executerControllerAttached = false;
                 this->socketClient = std::make_shared<TcpSocketClient>(TcpSocketClient(this->hostAddress, this->hostPort));
             }
             void refresh() { this->socketClient = std::make_shared<TcpSocketClient>(TcpSocketClient(this->hostAddress, this->hostPort)); }
+            void pushWriteBuffer(std::string data) {
+                std::shared_ptr<TcpMessage> message;
+                message = TcpMesageFromString(data);
+
+                writeBuffer.push(message);
+            }
         };
 
         class NetworkInterface {
@@ -87,6 +97,19 @@ namespace Engine {
                 for (size_t i = 0; i < networkList.size(); i++) {
                     if (networkList[i].readerControllerAttached == false) {
                         networkList[i].readerControllerAttached = true;
+                        getDescriptionMutex.unlock();
+                        return i;
+                    }
+                }
+                throw _FATAL_NETWORK_DESCRIPTION_FETCH;
+                return -1;
+            }
+
+            int fetchNetworkDescription(std::string desc) {
+                getDescriptionMutex.lock();
+                for (size_t i = 0; i < networkList.size(); i++) {
+                    if (networkList[i].description == desc) {
+                        networkList[i].executerControllerAttached = true;
                         getDescriptionMutex.unlock();
                         return i;
                     }

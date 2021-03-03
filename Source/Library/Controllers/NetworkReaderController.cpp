@@ -27,6 +27,7 @@ int NetworkReaderController::startThread() {
             if (networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->getConnectionStatus() == true) {
                 TcpMessage message;
                 networkInterface.getNetworkList()[networkInterfaceIndex].socketClient->readData(&message);
+                SYSTEM(getTag(), getDesc(), stringbuilder() << "Message Received...");
             }
             limiter.CalculateAndSleep();
         }

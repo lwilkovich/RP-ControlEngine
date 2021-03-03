@@ -1,8 +1,8 @@
 #ifndef ___QUEUE_H__
 #define ___QUEUE_H__
 
-#include <queue>
 #include <mutex>
+#include <queue>
 
 namespace _Queue {
     template <class T> class Queue {

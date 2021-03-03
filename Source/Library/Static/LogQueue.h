@@ -21,6 +21,7 @@ namespace _log {
             }
             return *this;
         }
+        ~LogQueue() {}
 
         std::string getTag() { return mClass; }
         /* Static access method. */

@@ -55,11 +55,24 @@
         "Cpu-Usage": 1,
         "Auto-Restart": true
     },
+    "CommandExecuterController": {
+        "Enabled": false,
+        "Thread-Count": 1,
+        "Cpu-Usage": 1,
+        "Auto-Restart": true
+    },
     "NetworkInterface": [
         {
             "Description": "Logs",
             "Address": "",
             "Port": 7225,
+            "Protocal": "TCP",
+            "Connection-Type": "Server"
+        },
+        {
+            "Description": "Commands",
+            "Address": "",
+            "Port": 7226,
             "Protocal": "TCP",
             "Connection-Type": "Server"
         }

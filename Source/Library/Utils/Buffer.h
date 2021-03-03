@@ -1,19 +1,18 @@
 #ifndef __BUFFER_H__
 #define __BUFFER_H__
 
+#include "_Logger.h"
 #include "_Queue.h"
 #include "_String.h"
-#include "_Logger.h"
 #include <iostream>
 #include <malloc.h>
 #include <memory>
-#include <queue>
-#include <stdlib.h>
-#include <string>
 #include <mutex>
-#include <memory>
+#include <queue>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #define mallocError " *** Failure Allocating Memory ***"
 #define cursorppOOB " *** Cursor Operator++ OOB ***"
@@ -48,9 +47,7 @@ namespace Engine {
             forwardLength = cap;
             backwardLength = 0;
         }
-        int8_t *getCursorData() {
-            return ptrBuffer;
-        }
+        int8_t *getCursorData() { return ptrBuffer; }
         size_t getForwardLength() { return forwardLength; }
         size_t getBackwardLength() { return backwardLength; }
         int8_t *operator++(int) {
@@ -125,7 +122,7 @@ namespace Engine {
             return ptrBuffer;
         }
         int8_t *getCurrentPosition() { return ptrBuffer; }
-        int8_t *writeByte(int8_t *ptr) {
+        int8_t *writeByte(const int8_t *ptr) {
             try {
                 void *dest = memcpy(ptrBuffer, ptr, 1);
                 if (dest != ptrBuffer) {
@@ -146,7 +143,7 @@ namespace Engine {
                 throw cursorWriteByteFail;
             }
         }
-        int8_t *writeBytes(int8_t *ptr, size_t size) {
+        int8_t *writeBytes(const int8_t *ptr, size_t size) {
             try {
                 int8_t *curBuffer = ptrBuffer;
                 for (size_t i = 0; i < size; i++) {
@@ -165,22 +162,26 @@ namespace Engine {
       private:
         std::string TAG = "MessageBuffer";
 
-        int8_t *allocatedBuffer;
+        int8_t *allocatedBuffer = NULL;
+        int8_t *originalAllocatedBuffer = NULL;
         size_t capacity;
         size_t length;
         BufferCursor bufferCursor;
 
         bool alreadyAllocatedBuffer = false;
 
-        void deallocate(int8_t *ptr) {
-            int8_t *allocated = NULL;
-            if (ptr) {
-                allocated = ptr;
+        void deallocate() {
+            if (alreadyAllocatedBuffer) {
+                int8_t *allocated = NULL;
+                if (originalAllocatedBuffer) {
+                    allocated = originalAllocatedBuffer;
+                }
+                if (allocated) {
+                    free(allocated);
+                    originalAllocatedBuffer = NULL;
+                }
             }
-            if (allocated) {
-                free(allocated);
-                *ptr = (int8_t)NULL;
-            }
+            alreadyAllocatedBuffer = false;
         }
         const std::string &getTag() { return TAG; }
         std::string getDesc() { return ""; }
@@ -191,7 +192,8 @@ namespace Engine {
         int Allocate(size_t size) {
             if (!alreadyAllocatedBuffer) {
                 try {
-                    allocatedBuffer = (int8_t *)malloc(size);
+                    originalAllocatedBuffer = (int8_t *)malloc(size);
+                    allocatedBuffer = originalAllocatedBuffer;
                     size_t realUsable = _getCapacity();
                     SYSTEM(getTag(), getDesc(), stringbuilder() << "Verifying MessageBuffer malloc: " << realUsable << " >= " << size);
                     if (!(realUsable >= size)) {
@@ -212,7 +214,21 @@ namespace Engine {
         size_t getCapacity() { return capacity; }
         size_t getLength() { return length; }
         BufferCursor getBufferCursor() { return bufferCursor; }
-        ~Buffer() { deallocate(allocatedBuffer); }
+        ~Buffer() { deallocate(); }
+        Buffer() {}
+        // copy constructor
+        Buffer(Buffer const &b) {
+            Allocate(b.length);
+            memcpy(allocatedBuffer, b.allocatedBuffer, b.length);
+            alreadyAllocatedBuffer = b.alreadyAllocatedBuffer;
+        }
+        // copy assignment
+        Buffer &operator=(Buffer const &b) {
+            Allocate(b.length);
+            memcpy(allocatedBuffer, b.allocatedBuffer, b.length);
+            alreadyAllocatedBuffer = b.alreadyAllocatedBuffer;
+            return *this;
+        }
     };
 } // namespace Engine
 #endif

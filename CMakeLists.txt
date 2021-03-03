@@ -11,7 +11,7 @@ file(GLOB CE_SRC "Source/*.cpp" /
 
 set(CE_PROJECT_NAME ControlEngine)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread -g3")
 
 add_executable(${CE_PROJECT_NAME} ${CE_SRC})
 set_target_properties(${CE_PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)

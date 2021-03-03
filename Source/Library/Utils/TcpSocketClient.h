@@ -4,6 +4,8 @@
 #include "../Utils/Config.h"
 #include "../Utils/_Logger.h"
 #include "../Utils/_String.h"
+#include "Buffer.h"
+#include "TcpMessage.h"
 #include <arpa/inet.h>
 #include <exception>
 #include <fcntl.h>
@@ -17,14 +19,12 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include "TcpMessage.h"
-#include "Buffer.h"
 
 #define MAX_PACKET_SIZE 64 * 1024
 
 namespace Engine {
     namespace Network {
-        enum CurrentReadingState { MESSAGE_SIZE, MESSAGE_TYPE, MESSAGE };        
+        enum CurrentReadingState { MESSAGE_SIZE, MESSAGE_TYPE, MESSAGE };
 
         class TcpSocketClient {
           private:
@@ -82,10 +82,10 @@ namespace Engine {
             int listenSocket();
             int acceptSocket();
 
-            int readData(TcpMessage* message);
+            int readData(TcpMessage *message);
 
             int ping();
-            ssize_t sendData(const char *message);
+            ssize_t sendData(std::shared_ptr<TcpMessage> message);
 
           private:
             ssize_t sendData(const void *buffer, int size);

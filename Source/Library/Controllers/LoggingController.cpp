@@ -39,6 +39,10 @@ LoggingController::LoggingController(Config *config) {
         fileLocation = config->settings[TAG][_FILE_LOCATION];
         cpuUsage = config->settings[TAG][_CPU_USAGE];
         autoRestartFlag = config->settings[TAG][_AUTO_RESTART];
+
+        INFO(getTag(), getDesc(), stringbuilder() << "Fetching Network Description...");
+        networkInterfaceIndex = networkInterface.fetchNetworkDescription("Logs");
+        INFO(getTag(), getDesc(), stringbuilder() << "Fetched Network Description: { " << networkInterfaceIndex << " }");
     } catch (const json::exception &e) {
         std::cout << e.what() << std::endl;
     }
@@ -108,14 +112,14 @@ json LoggingController::buildLogJson(std::array<std::string, 4> holder) {
 }
 
 void LoggingController::cutBatchEntry(LogThroughput *batchEntry, float elapsedTime) {
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Total Log Count: " << batchEntry->getTotalCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Sys Log Count: " << batchEntry->getSystemCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Info Log Count: " << batchEntry->getInfoCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Debug Log Count: " << batchEntry->getDebugCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Warning Log Count: " << batchEntry->getWarningCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Error Log Count: " << batchEntry->getErrorCount());
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Log Throughput: ~" << (batchEntry->size() / elapsedTime) << " Bytes / Second");
-    SYSTEM(getTag(), getDesc(), stringbuilder() << "Log Mem Size: " << (batchEntry->size()) << " Bytes");
+    INFO(getTag(), getDesc(), stringbuilder() << "Total Log Count: " << batchEntry->getTotalCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Sys Log Count: " << batchEntry->getSystemCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Info Log Count: " << batchEntry->getInfoCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Debug Log Count: " << batchEntry->getDebugCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Warning Log Count: " << batchEntry->getWarningCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Error Log Count: " << batchEntry->getErrorCount());
+    INFO(getTag(), getDesc(), stringbuilder() << "Log Throughput: ~" << (batchEntry->size() / elapsedTime) << " Bytes / Second");
+    INFO(getTag(), getDesc(), stringbuilder() << "Log Mem Size: " << (batchEntry->size()) << " Bytes");
 }
 
 void LoggingController::screenLogOut(std::string record) {
@@ -125,8 +129,7 @@ void LoggingController::screenLogErr(std::string record) {
     std::cerr << record;
 }
 void LoggingController::networkLog(std::string record) {
-    record += '\r';
-    networkInterface.getNetworkList()[networkInterfaceIndex].writeBuffer.push(record);
+    networkInterface.getNetworkList()[networkInterfaceIndex].pushWriteBuffer(record);
 }
 void LoggingController::fileLog(std::string record) {
     fout << record;
@@ -135,13 +138,14 @@ void LoggingController::fileLog(std::string record) {
 
 void LoggingController::logInfo(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
-    json logJson = buildLogJson(holder);
+    // json logJson = buildLogJson(holder);
     batchEntry->pushInfoLog(record);
     if (screen.info) {
         screenLogOut(record);
     }
     if (network.info) {
-        networkLog(logJson.dump(4, ' ', true));
+        // networkLog(logJson.dump(4, ' ', true));
+        networkLog(record);
     }
     if (file.info) {
         fileLog(record);
@@ -150,13 +154,14 @@ void LoggingController::logInfo(std::array<std::string, 4> holder, LogThroughput
 
 void LoggingController::logSystem(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
-    json logJson = buildLogJson(holder);
+    // json logJson = buildLogJson(holder);
     batchEntry->pushSysLog(record);
     if (screen.system) {
         screenLogOut(record);
     }
     if (network.system) {
-        networkLog(logJson.dump(4, ' ', true));
+        // networkLog(logJson.dump(4, ' ', true));
+        networkLog(record);
     }
     if (file.system) {
         fileLog(record);
@@ -165,13 +170,14 @@ void LoggingController::logSystem(std::array<std::string, 4> holder, LogThroughp
 
 void LoggingController::logDebug(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
-    json logJson = buildLogJson(holder);
+    // json logJson = buildLogJson(holder);
     batchEntry->pushDebugLog(record);
     if (screen.debug) {
         screenLogOut(record);
     }
     if (network.debug) {
-        networkLog(logJson.dump(4, ' ', true));
+        // networkLog(logJson.dump(4, ' ', true));
+        networkLog(record);
     }
     if (file.debug) {
         fileLog(record);
@@ -180,13 +186,14 @@ void LoggingController::logDebug(std::array<std::string, 4> holder, LogThroughpu
 
 void LoggingController::logWarning(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
-    json logJson = buildLogJson(holder);
+    // json logJson = buildLogJson(holder);
     batchEntry->pushWarningLog(record);
     if (screen.warning) {
         screenLogOut(record);
     }
     if (network.warning) {
-        networkLog(logJson.dump(4, ' ', true));
+        // networkLog(logJson.dump(4, ' ', true));
+        networkLog(record);
     }
     if (network.warning) {
         fileLog(record);
@@ -195,13 +202,14 @@ void LoggingController::logWarning(std::array<std::string, 4> holder, LogThrough
 
 void LoggingController::logError(std::array<std::string, 4> holder, LogThroughput *batchEntry) {
     std::string record = buildLogRecord(holder);
-    json logJson = buildLogJson(holder);
+    // json logJson = buildLogJson(holder);
     batchEntry->pushErrorLog(record);
     if (screen.error) {
         screenLogErr(record);
     }
     if (network.error) {
-        networkLog(logJson.dump(4, ' ', true));
+        // networkLog(logJson.dump(4, ' ', true));
+        networkLog(record);
     }
     if (file.error) {
         fileLog(record);

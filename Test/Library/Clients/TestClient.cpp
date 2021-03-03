@@ -41,8 +41,8 @@ int main(int argc, char const *argv[])
     TcpMessage message;
     message.messageType = BINARY;
     message.messageSize = 5;
-    message.buffer.Allocate(message.messageSize);
-    auto c = message.buffer.getBufferCursor();
+    message.buffer->Allocate(message.messageSize);
+    auto c = message.buffer->getBufferCursor();
     int8_t y = 'h';
     c.writeByte(&y);
     c.writeByte(&y);

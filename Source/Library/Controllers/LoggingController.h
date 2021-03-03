@@ -46,7 +46,7 @@ namespace Engine {
         std::string fileLocation;
         bool autoRestartFlag;
 
-        int networkInterfaceIndex = 0;
+        int networkInterfaceIndex;
 
         Network::NetworkInterface &networkInterface = Network::NetworkInterface::getNetwork();
 

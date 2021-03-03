@@ -1,4 +1,5 @@
 #include "../../../Source/Library/Utils/Buffer.h"
+#include "../../../Source/Library/Utils/_Queue.h"
 #include "gtest/gtest.h"
 
 #include <iostream>
@@ -7,37 +8,37 @@ using namespace Engine;
 
 TEST(Buffer, allocateMemory) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
-    ASSERT_EQ(buffer.getCapacity(), size);
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size);
+    ASSERT_EQ(buffer->getCapacity(), size);
 }
 
 TEST(Buffer, cursorForwardLengthSet) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size);
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
 
-    ASSERT_EQ(buffer.getLength(), c.getForwardLength());
+    ASSERT_EQ(buffer->getLength(), c.getForwardLength());
 }
 
 TEST(Buffer, cursorBackwardLengthSet) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
 
     ASSERT_EQ(0, c.getBackwardLength());
 }
 
 TEST(Buffer, cursorppOperator) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     size_t pLen = c.getForwardLength();
     size_t nLen = c.getBackwardLength();
     c++;
@@ -48,10 +49,10 @@ TEST(Buffer, cursorppOperator) {
 
 TEST(Buffer, cursormmOperator) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size);
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     size_t pLen = c.getForwardLength();
     size_t nLen = c.getBackwardLength();
     c--;
@@ -62,10 +63,10 @@ TEST(Buffer, cursormmOperator) {
 
 TEST(Buffer, cursorJumpForward) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     size_t pLen = c.getForwardLength();
     size_t nLen = c.getBackwardLength();
     size_t jumpAmount = 5;
@@ -77,10 +78,10 @@ TEST(Buffer, cursorJumpForward) {
 
 TEST(Buffer, cursorJumpBackward) {
     size_t size = 500;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     size_t pLen = c.getForwardLength();
     size_t nLen = c.getBackwardLength();
     size_t jumpAmount = 5;
@@ -94,10 +95,10 @@ TEST(Buffer, cursorJumpBackward) {
 
 TEST(Buffer, cursorWriteByte) {
     size_t size = 5;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     size_t pLen = c.getForwardLength();
     size_t nLen = c.getBackwardLength();
 
@@ -112,10 +113,10 @@ TEST(Buffer, cursorWriteByte) {
 
 TEST(Buffer, cursorWriteByte_WholeBuffer) {
     size_t size = 5;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
     for (size_t i = 0; i < size-1; i++)
     {
         size_t pLen = c.getForwardLength();
@@ -152,10 +153,10 @@ TEST(Buffer, cursorWriteByte_WholeBuffer) {
 
 TEST(Buffer, cursorWriteBytes) {
     size_t size = 5;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
 
     int8_t* tempBuf = (int8_t*)malloc(size);
     int8_t* tempOriginBuf = tempBuf;
@@ -174,14 +175,15 @@ TEST(Buffer, cursorWriteBytes) {
         ASSERT_EQ(*c.getCurrentPosition(), i);
         c++;
     }
+
 }
 
 TEST(Buffer, cursorWriteBytes_overFlowWrapping) {
     size_t size = 5;
-    Buffer buffer;
-    buffer.Allocate(size); 
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
 
-    BufferCursor c = buffer.getBufferCursor();
+    BufferCursor c = buffer->getBufferCursor();
 
     int8_t* tempBuf = (int8_t*)malloc(7);
     int8_t* tempOriginBuf = tempBuf;
@@ -194,7 +196,8 @@ TEST(Buffer, cursorWriteBytes_overFlowWrapping) {
     }
     
     c.writeBytes(tempOriginBuf, 7);
-    c = buffer.getBufferCursor();
+
+    c = buffer->getBufferCursor();
     for (size_t i = 5; i < 7; i++) {
         // std::cout << "i: " << i << " " << static_cast<int16_t>(*c.getCurrentPosition()) << std::endl; 
         ASSERT_EQ(*c.getCurrentPosition(), i);
@@ -205,5 +208,82 @@ TEST(Buffer, cursorWriteBytes_overFlowWrapping) {
         // std::cout << "i: " << i << " " << static_cast<int16_t>(*c.getCurrentPosition()) << std::endl; 
         ASSERT_EQ(*c.getCurrentPosition(), i);
         c++;
+    }
+}
+
+TEST(Buffer, bufferAssignment) {
+    size_t size = 5;
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
+
+    BufferCursor c = buffer->getBufferCursor();
+
+    int8_t* tempBuf = (int8_t*)malloc(size);
+    int8_t* tempOriginBuf = tempBuf;
+    int8_t value = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+        memcpy(tempBuf, &value,1);
+        tempBuf+=1;
+        value += 1;
+    }
+    
+    c.writeBytes(tempOriginBuf, 5);
+
+    for (size_t i = 0; i < size; i++) {
+        // std::cout << "i: " << i << " " << static_cast<int16_t>(*c.getCurrentPosition()) << std::endl; 
+        ASSERT_EQ(*c.getCurrentPosition(), i);
+        c++;
+    }
+    std::shared_ptr<Buffer> bufferTwo = buffer;
+
+    auto bufferTwoCursor = bufferTwo->getBufferCursor();
+    auto bufferCursor = buffer->getBufferCursor();
+
+    for (size_t i = 0; i < size; i++) {
+        // std::cout << "i: " << i << " " << static_cast<int16_t>(*bufferCursor.getCurrentPosition()) << " " << static_cast<int16_t>(*bufferTwoCursor.getCurrentPosition()) << std::endl; 
+        ASSERT_EQ(*bufferCursor.getCurrentPosition(), *bufferTwoCursor.getCurrentPosition());
+        bufferCursor++;
+        bufferTwoCursor++;
+    }
+}
+
+TEST(Buffer, bufferQueueAssignment) {
+    size_t size = 5;
+    std::shared_ptr<Buffer> buffer(new Buffer());
+    buffer->Allocate(size); 
+
+    BufferCursor c = buffer->getBufferCursor();
+
+    int8_t* tempBuf = (int8_t*)malloc(size);
+    int8_t* tempOriginBuf = tempBuf;
+    int8_t value = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+        memcpy(tempBuf, &value,1);
+        tempBuf+=1;
+        value += 1;
+    }
+    
+    c.writeBytes(tempOriginBuf, 5);
+
+    for (size_t i = 0; i < size; i++) {
+        // std::cout << "i: " << i << " " << static_cast<int16_t>(*c.getCurrentPosition()) << std::endl; 
+        ASSERT_EQ(*c.getCurrentPosition(), i);
+        c++;
+    }
+
+    _Queue::Queue<std::shared_ptr<Buffer>> qBuf;
+    qBuf.push(buffer);
+    std::shared_ptr<Buffer> bufferTwo = qBuf.pop();
+
+    auto bufferTwoCursor = bufferTwo->getBufferCursor();
+    auto bufferCursor = buffer->getBufferCursor();
+
+    for (size_t i = 0; i < size; i++) {
+        // std::cout << "i: " << i << " " << static_cast<int16_t>(*bufferCursor.getCurrentPosition()) << " " << static_cast<int16_t>(*bufferTwoCursor.getCurrentPosition()) << std::endl; 
+        ASSERT_EQ(*bufferCursor.getCurrentPosition(), *bufferTwoCursor.getCurrentPosition());
+        bufferCursor++;
+        bufferTwoCursor++;
     }
 }

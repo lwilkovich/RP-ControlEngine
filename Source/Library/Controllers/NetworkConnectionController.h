@@ -3,6 +3,7 @@
 
 #include "../../Third-Party/json.hpp"
 #include "../Static/NetworkInterface.h"
+#include "../Utils/Buffer.h"
 #include "../Utils/Config.h"
 #include "../Utils/CpuLimiter.h"
 #include "../Utils/_Logger.h"
@@ -11,7 +12,6 @@
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
-#include "../Utils/Buffer.h"
 
 typedef nlohmann::json json;
 
